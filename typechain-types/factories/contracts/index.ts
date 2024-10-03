@@ -2,5 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as erc20MockSol from "./ERC20MOCK.sol";
-export { Lock__factory } from "./Lock__factory";
 export { MarsxCommunity__factory } from "./MarsxCommunity__factory";

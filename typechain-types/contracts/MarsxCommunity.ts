@@ -27,19 +27,18 @@ export declare namespace MarsxCommunity {
   export type OwnerStruct = {
     ownerAddress: AddressLike;
     quantity: BigNumberish;
-    currency: string;
   };
 
-  export type OwnerStructOutput = [
-    ownerAddress: string,
-    quantity: bigint,
-    currency: string
-  ] & { ownerAddress: string; quantity: bigint; currency: string };
+  export type OwnerStructOutput = [ownerAddress: string, quantity: bigint] & {
+    ownerAddress: string;
+    quantity: bigint;
+  };
 }
 
 export interface MarsxCommunityInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "available"
       | "balanceOf"
       | "balanceOfBatch"
       | "communityOwners"
@@ -51,7 +50,9 @@ export interface MarsxCommunityInterface extends Interface {
       | "mxPrice"
       | "mxToken"
       | "name"
+      | "nonces"
       | "owner"
+      | "publishCommunties"
       | "renounceOwnership"
       | "safeBatchTransferFrom"
       | "safeTransferFrom"
@@ -62,6 +63,8 @@ export interface MarsxCommunityInterface extends Interface {
       | "supportsInterface"
       | "symbol"
       | "toggleUsdtPurchases"
+      | "totalPublished"
+      | "totalSupply"
       | "transferOwnership"
       | "uri"
       | "usdtEnabled"
@@ -74,6 +77,7 @@ export interface MarsxCommunityInterface extends Interface {
     nameOrSignatureOrTopic:
       | "ApprovalForAll"
       | "BaseURISet"
+      | "CommunityPublished"
       | "MintedWithMX"
       | "MintedWithUSDT"
       | "OwnershipTransferred"
@@ -83,6 +87,10 @@ export interface MarsxCommunityInterface extends Interface {
       | "URI"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "available",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [AddressLike, BigNumberish]
@@ -109,16 +117,21 @@ export interface MarsxCommunityInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "mintWithMX",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "mintWithUSDT",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "mxPrice", values?: undefined): string;
   encodeFunctionData(functionFragment: "mxToken", values?: undefined): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(functionFragment: "nonces", values: [AddressLike]): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "publishCommunties",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -160,6 +173,14 @@ export interface MarsxCommunityInterface extends Interface {
     values: [boolean]
   ): string;
   encodeFunctionData(
+    functionFragment: "totalPublished",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupply",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
@@ -175,6 +196,7 @@ export interface MarsxCommunityInterface extends Interface {
     values: [AddressLike, BigNumberish, boolean]
   ): string;
 
+  decodeFunctionResult(functionFragment: "available", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfBatch",
@@ -204,7 +226,12 @@ export interface MarsxCommunityInterface extends Interface {
   decodeFunctionResult(functionFragment: "mxPrice", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mxToken", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "publishCommunties",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -234,6 +261,14 @@ export interface MarsxCommunityInterface extends Interface {
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "toggleUsdtPurchases",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalPublished",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupply",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -280,6 +315,19 @@ export namespace BaseURISetEvent {
   export type OutputTuple = [newBaseURI: string];
   export interface OutputObject {
     newBaseURI: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace CommunityPublishedEvent {
+  export type InputTuple = [communityId: BigNumberish, isPublished: boolean];
+  export type OutputTuple = [communityId: bigint, isPublished: boolean];
+  export interface OutputObject {
+    communityId: bigint;
+    isPublished: boolean;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -474,6 +522,8 @@ export interface MarsxCommunity extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  available: TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
+
   balanceOf: TypedContractMethod<
     [account: AddressLike, id: BigNumberish],
     [bigint],
@@ -488,13 +538,7 @@ export interface MarsxCommunity extends BaseContract {
 
   communityOwners: TypedContractMethod<
     [arg0: BigNumberish, arg1: BigNumberish],
-    [
-      [string, bigint, string] & {
-        ownerAddress: string;
-        quantity: bigint;
-        currency: string;
-      }
-    ],
+    [[string, bigint] & { ownerAddress: string; quantity: bigint }],
     "view"
   >;
 
@@ -513,13 +557,23 @@ export interface MarsxCommunity extends BaseContract {
   lastMintedItemId: TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
 
   mintWithMX: TypedContractMethod<
-    [communityId: BigNumberish, quantity: BigNumberish],
+    [
+      communityId: BigNumberish,
+      quantity: BigNumberish,
+      nonce: BigNumberish,
+      signature: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
 
   mintWithUSDT: TypedContractMethod<
-    [communityId: BigNumberish, quantity: BigNumberish],
+    [
+      communityId: BigNumberish,
+      quantity: BigNumberish,
+      nonce: BigNumberish,
+      signature: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -530,7 +584,15 @@ export interface MarsxCommunity extends BaseContract {
 
   name: TypedContractMethod<[], [string], "view">;
 
+  nonces: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+
   owner: TypedContractMethod<[], [string], "view">;
+
+  publishCommunties: TypedContractMethod<
+    [_toBePublished: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -551,7 +613,7 @@ export interface MarsxCommunity extends BaseContract {
       from: AddressLike,
       to: AddressLike,
       id: BigNumberish,
-      value: BigNumberish,
+      amount: BigNumberish,
       data: BytesLike
     ],
     [void],
@@ -592,6 +654,10 @@ export interface MarsxCommunity extends BaseContract {
     "nonpayable"
   >;
 
+  totalPublished: TypedContractMethod<[], [bigint], "view">;
+
+  totalSupply: TypedContractMethod<[], [bigint], "view">;
+
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
     [void],
@@ -617,6 +683,9 @@ export interface MarsxCommunity extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "available"
+  ): TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
+  getFunction(
     nameOrSignature: "balanceOf"
   ): TypedContractMethod<
     [account: AddressLike, id: BigNumberish],
@@ -634,13 +703,7 @@ export interface MarsxCommunity extends BaseContract {
     nameOrSignature: "communityOwners"
   ): TypedContractMethod<
     [arg0: BigNumberish, arg1: BigNumberish],
-    [
-      [string, bigint, string] & {
-        ownerAddress: string;
-        quantity: bigint;
-        currency: string;
-      }
-    ],
+    [[string, bigint] & { ownerAddress: string; quantity: bigint }],
     "view"
   >;
   getFunction(
@@ -663,14 +726,24 @@ export interface MarsxCommunity extends BaseContract {
   getFunction(
     nameOrSignature: "mintWithMX"
   ): TypedContractMethod<
-    [communityId: BigNumberish, quantity: BigNumberish],
+    [
+      communityId: BigNumberish,
+      quantity: BigNumberish,
+      nonce: BigNumberish,
+      signature: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "mintWithUSDT"
   ): TypedContractMethod<
-    [communityId: BigNumberish, quantity: BigNumberish],
+    [
+      communityId: BigNumberish,
+      quantity: BigNumberish,
+      nonce: BigNumberish,
+      signature: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -684,8 +757,14 @@ export interface MarsxCommunity extends BaseContract {
     nameOrSignature: "name"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "nonces"
+  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+  getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "publishCommunties"
+  ): TypedContractMethod<[_toBePublished: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -709,7 +788,7 @@ export interface MarsxCommunity extends BaseContract {
       from: AddressLike,
       to: AddressLike,
       id: BigNumberish,
-      value: BigNumberish,
+      amount: BigNumberish,
       data: BytesLike
     ],
     [void],
@@ -740,6 +819,12 @@ export interface MarsxCommunity extends BaseContract {
   getFunction(
     nameOrSignature: "toggleUsdtPurchases"
   ): TypedContractMethod<[enabled: boolean], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "totalPublished"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "totalSupply"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
@@ -776,6 +861,13 @@ export interface MarsxCommunity extends BaseContract {
     BaseURISetEvent.InputTuple,
     BaseURISetEvent.OutputTuple,
     BaseURISetEvent.OutputObject
+  >;
+  getEvent(
+    key: "CommunityPublished"
+  ): TypedContractEvent<
+    CommunityPublishedEvent.InputTuple,
+    CommunityPublishedEvent.OutputTuple,
+    CommunityPublishedEvent.OutputObject
   >;
   getEvent(
     key: "MintedWithMX"
@@ -848,6 +940,17 @@ export interface MarsxCommunity extends BaseContract {
       BaseURISetEvent.InputTuple,
       BaseURISetEvent.OutputTuple,
       BaseURISetEvent.OutputObject
+    >;
+
+    "CommunityPublished(uint256,bool)": TypedContractEvent<
+      CommunityPublishedEvent.InputTuple,
+      CommunityPublishedEvent.OutputTuple,
+      CommunityPublishedEvent.OutputObject
+    >;
+    CommunityPublished: TypedContractEvent<
+      CommunityPublishedEvent.InputTuple,
+      CommunityPublishedEvent.OutputTuple,
+      CommunityPublishedEvent.OutputObject
     >;
 
     "MintedWithMX(address,uint256,uint256)": TypedContractEvent<

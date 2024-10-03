@@ -3,5 +3,4 @@
 /* eslint-disable */
 import type * as erc20MockSol from "./ERC20MOCK.sol";
 export type { erc20MockSol };
-export type { Lock } from "./Lock";
 export type { MarsxCommunity } from "./MarsxCommunity";
