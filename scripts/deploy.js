@@ -12,7 +12,8 @@ async function main() {
     const baseURI = 'https://marsx.mypinata.cloud/ipfs/QmdjnZJM5ADo6ueBDfLsi2H92B8ixNqu4GiCJZGw5Vyt4U/';    
     const mxPrice = '1000000000000000000000';   // Example: 1000 MX tokens
     const usdtPrice = '1000000000'; // Example: 1000 USDT tokens (assuming 6 decimals)
-  
+    const authorizedSignerAddress = "0x550e602C1eaD04C84d0c02171b0CC0cdDfc7b0E4"; // considering as authorizer
+
     // Get the contract to deploy
     const CommunitiesERC1155 = await ethers.getContractFactory('MarsxCommunity'); // Replace with your contract name
   
@@ -22,7 +23,8 @@ async function main() {
       mxTokenAddress,
       baseURI,
       mxPrice,
-      usdtPrice
+      usdtPrice,
+      authorizedSignerAddress
     );
     // Wait for deployment to finish
     console.log('Contract deployed to:', deployedContract);

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **Mars-X Community** smart [contract](https://amoy.polygonscan.com/address/0xdb9d09ae2977a316e0ec7519d1d122f811df031b#code) is an ERC1155-based token that facilitates the minting of NFT communities on the Mars-X platform. It is designed to support both USDT and a custom ERC20 token (MX) for payments, while maintaining comprehensive tracking of owners for each community. The contract includes a robust set of features for the secure transfer and management of tokens, as well as a flexible architecture for setting metadata and handling minting logic.
+The **Mars-X Community** smart [contract](https://amoy.polygonscan.com/address/0xe00c807EE706a60B87439f219180244765d94B90#code) is an ERC1155-based token that facilitates the minting of NFT communities on the Mars-X platform. It is designed to support both USDT and a custom ERC20 token (MX) for payments, while maintaining comprehensive tracking of owners for each community. The contract includes a robust set of features for the secure transfer and management of tokens, as well as a flexible architecture for setting metadata and handling minting logic.
 
 ## Features
 
@@ -57,6 +57,11 @@ constructor(
 - `baseURI`: The base URI for NFT metadata.
 - `usdtToken`: The ERC20 token contract for USDT.
 - `mxToken`: The ERC20 token contract for MX.
+- `totalSupply`: Total number of communities.
+- `totalPublished`: Number of communities released for minting.
+- `available`: A mapping to list the published communities.
+- `nonces`: A mapping to keep track of nonce for each address.
+- `authorizedSigner`: Address used to sign off-chain transactions for verification.
 
 
 ## Functions
@@ -148,6 +153,6 @@ npm install
 npx hardhat compile
 npx hardhat test
 npx hardhat run scripts/deploy.js --network testnet
-npx hardhat verify --network testnet <contractaddress> <usdtAddress> <mxTokenAddress> <baseURI> <mxPrice> <usdtPrice>
+npx hardhat verify --network testnet <contractaddress> <usdtAddress> <mxTokenAddress> <baseURI> <mxPrice> <usdtPrice> <authoriseAddress>
 
 ```
